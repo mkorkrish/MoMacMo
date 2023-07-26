@@ -1,0 +1,41 @@
+# List to hold the within-cluster sum of squares for different values of k
+wcss = []
+
+# We'll compute WCSS for k values from 1 to 10
+for i in range(1, 11):
+    kmeans = KMeans(n_clusters=i, init='k-means++', max_iter=300, n_init=10, random_state=0)
+    kmeans.fit(X)
+    wcss.append(kmeans.inertia_)
+
+# Plot the elbow method graph
+plt.figure(figsize=(10, 8))
+plt.plot(range(1, 11), wcss, marker='o')
+plt.title('Elbow Method')
+plt.xlabel('Number of clusters (k)')
+plt.ylabel('WCSS')
+plt.grid(True)
+plt.show()
+
+# Perform k-means clustering with 5 clusters
+kmeans = KMeans(n_clusters=5, random_state=0).fit(X)
+
+# Get the cluster labels
+labels = kmeans.labels_
+
+# Separate the data by cluster
+clusters = [X[labels == i] for i in range(5)]
+
+# Set the colors for each cluster
+colors = ['blue', 'orange', 'green', 'red', 'purple']
+
+# Plot each cluster separately
+fig, axs = plt.subplots(5, 1, figsize=(10, 35))
+
+for i, cluster in enumerate(clusters):
+    axs[i].scatter(cluster['x'], cluster['y'], c=colors[i])
+    axs[i].set_title(f'Cluster {i+1}')
+    axs[i].set_xlabel('x')
+    axs[i].set_ylabel('y')
+
+plt.tight_layout()
+plt.show()
