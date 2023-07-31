@@ -1,0 +1,165 @@
+# Importing necessary libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+
+# Loading the dataset
+df = pd.read_csv('trainingEventsDistributed.csv')
+
+# Displaying the first few rows of the dataframe
+df.head()
+
+# Checking for missing values
+df.isnull().sum()
+
+# Descriptive statistics
+df.describe()
+
+# List of numerical columns
+num_cols = ['frame', 'volume', 'count', 'power', 'x', 'y', 'z', 't0', 'twin', 'vel']
+
+# Setting the size of the plots
+plt.figure(figsize=(15, 10))
+
+# Creating a subplot for each numerical column
+for index in range(len(num_cols)):
+    plt.subplot(3, 4, index + 1)
+    sns.histplot(data=df, x=num_cols[index], bins=30, kde=True)
+
+# Adding some spacing between the plots
+plt.tight_layout()
+
+# Showing the plots
+plt.show()
+
+# Exploring the categorical variables
+cat_cols = ['label', 'chanRange', 'mapType']
+
+# Checking unique values and their counts for each categorical variable
+for col in cat_cols:
+    print(f"--- {col} ---")
+    print(df[col].value_counts())
+    print("\n")
+
+# Choosing the features for clustering
+features = ['x', 'y', 'volume', 'power', 'count']
+
+# Standardizing the features
+scaler = StandardScaler()
+df_scaled = scaler.fit_transform(df[features])
+
+# Converting the scaled features into a dataframe
+df_scaled = pd.DataFrame(df_scaled, columns=features)
+
+# Displaying the first few rows of the scaled dataframe
+df_scaled.head()
+
+# List to hold the sum of squared distances
+ssd = []
+
+# Range of potential numbers of clusters
+range_n_clusters = list(range(2, 10))
+
+# Calculating SSD for different numbers of clusters
+for num_clusters in range_n_clusters:
+    kmeans = KMeans(n_clusters=num_clusters, random_state=0)
+    kmeans.fit(df_scaled)
+
+    # Appending the SSD for the current number of clusters to the list
+    ssd.append(kmeans.inertia_)
+
+# Plotting SSD vs. number of clusters
+plt.figure(figsize=(8, 6))
+plt.plot(range_n_clusters, ssd, marker='o')
+plt.xlabel('Number of clusters')
+plt.ylabel('Sum of Squared Distances (SSD)')
+plt.title('Elbow Method to Determine Optimal Number of Clusters')
+plt.grid(True)
+plt.show()
+
+# Creating a K-means model with 4 clusters
+kmeans = KMeans(n_clusters=4, random_state=0)
+
+# Fitting the model and predicting the clusters
+clusters = kmeans.fit_predict(df_scaled)
+
+# Adding the cluster assignments to the original dataframe
+df['cluster'] = clusters
+
+# Checking the first few rows of the dataframe
+df.head()
+
+# Set the size of the plots for box plots
+plt.figure(figsize=(15, 10))
+
+# Creating a box plot for each numerical feature
+for index in range(len(features)):
+    plt.subplot(2, 3, index + 1)
+    sns.boxplot(x='cluster', y=features[index], data=df)
+
+# Adding some spacing between the plots
+plt.tight_layout()
+
+# Showing the plots
+plt.show()
+
+# Set the size of the plots for bar plots
+plt.figure(figsize=(15, 5))
+
+# Creating a bar plot for each categorical feature
+for index, col in enumerate(['label', 'mapType']):
+    plt.subplot(1, 2, index + 1)
+    df.groupby(['cluster', col]).size().unstack().plot(kind='bar', stacked=True, ax=plt.gca())
+    plt.ylabel('Count')
+    plt.title(f'Distribution of {col} across clusters')
+
+# Adding some spacing between the plots
+plt.tight_layout()
+
+# Showing the plots
+plt.show()
+
+# Now, let's perform k-means clustering with 5 clusters and plot the clusters
+wcss = []
+X = df_scaled[features]
+
+# We'll compute WCSS for k values from 1 to 10
+for i in range(1, 11):
+    kmeans = KMeans(n_clusters=i, init='k-means++', max_iter=300, n_init=10, random_state=0)
+    kmeans.fit(X)
+    wcss.append(kmeans.inertia_)
+
+# Plot the elbow method graph
+plt.figure(figsize=(10, 8))
+plt.plot(range(1, 11), wcss, marker='o')
+plt.title('Elbow Method')
+plt.xlabel('Number of clusters (k)')
+plt.ylabel('WCSS')
+plt.grid(True)
+plt.show()
+
+# Perform k-means clustering with 5 clusters
+kmeans = KMeans(n_clusters=5, random_state=0).fit(X)
+
+# Get the cluster labels
+labels = kmeans.labels_
+
+# Separate the data by cluster
+clusters = [X[labels == i] for i in range(5)]
+
+# Set the colors for each cluster
+colors = ['blue', 'orange', 'green', 'red', 'purple']
+
+# Plot each cluster separately
+fig, axs = plt.subplots(5, 1, figsize=(10, 35))
+
+for i, cluster in enumerate(clusters):
+    axs[i].scatter(cluster['x'], cluster['y'], c=colors[i])
+    axs[i].set_title(f'Cluster {i + 1}')
+    axs[i].set_xlabel('x')
+    axs[i].set_ylabel('y')
+
+plt.tight_layout()
+plt.show()
