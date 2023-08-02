@@ -8,8 +8,8 @@ data = pd.read_csv('trainingEventsDistributed.csv')
 # Extract 'x' and 'y' columns
 X = data[['x', 'y']]
 
-# Create a KMeans instance with 4 clusters
-kmeans = KMeans(n_clusters=4, random_state=0)
+# Create a KMeans instance with 3 clusters
+kmeans = KMeans(n_clusters=3, random_state=0)
 
 # Fit the model to the data
 kmeans.fit(X)
@@ -18,7 +18,7 @@ kmeans.fit(X)
 data['cluster'] = kmeans.predict(X)
 
 # Set up a color map with vibrant colors
-colors = ['blue', 'green', 'red', 'cyan']
+colors = ['blue', 'green', 'red']
 
 # Create a scatterplot of the 'x' and 'y' variables
 # Color the points by the cluster assignments
@@ -37,7 +37,7 @@ plt.xlabel('x')
 plt.ylabel('y')
 
 # Add a title for the plot
-plt.title('K-Means Clustering with 4 Clusters')
+plt.title('K-Means Clustering with 3 Clusters')
 
 # Show the plot
 plt.show()
