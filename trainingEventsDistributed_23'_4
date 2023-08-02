@@ -1,3 +1,13 @@
+import pandas as pd
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
+# Load the data from the CSV file
+data = pd.read_csv('trainingEventsDistributed.csv')
+
+# Extract 'x' and 'y' columns
+X = data[['x', 'y']]
+
 # Create a KMeans instance with 3 clusters
 kmeans = KMeans(n_clusters=3, random_state=0)
 
