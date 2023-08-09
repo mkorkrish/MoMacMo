@@ -53,6 +53,10 @@ cluster_labels = kmeans.fit_predict(data_for_clustering)
 # Add the cluster labels to the original data
 data['cluster'] = cluster_labels
 
+# Add 1 to each cluster label to make them start at 1
+cluster_labels += 1
+
+
 # Save the data with the new cluster labels
 data.to_csv('trainingEventsDistributed_with_clusters.csv', index=False)
 
